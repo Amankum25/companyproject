@@ -1,7 +1,7 @@
 [project]
 name = "btc-options-straddle"
 version = "0.1.0"
-description = "BTC ATM Short Straddle using NautilusTrader and Bybit Testnet"
+description = "BTC ATM Short Straddle using NautilusTrader with Deribit Testnet as the default venue"
 requires-python = ">=3.13"
 dependencies = [
     "nautilus-trader==2.0.0rc8",

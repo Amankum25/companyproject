@@ -13,8 +13,9 @@ from dataclasses import dataclass, field
 
 from dotenv import load_dotenv
 
-# Load .env file if it exists
-load_dotenv()
+# The local .env is the credential source for this workspace. In particular,
+# blank fields there must not silently fall back to inherited shell secrets.
+load_dotenv(override=True)
 
 
 @dataclass
@@ -48,32 +49,17 @@ def load_config() -> StraddleConfig:
     Load and validate configuration from environment variables.
     """
     # Detect venue
-    venue = os.getenv("EXCHANGE_VENUE", "").strip().upper()
+    venue = os.getenv("EXCHANGE_VENUE", "DERIBIT").strip().upper() or "DERIBIT"
+    if venue not in {"DERIBIT", "BYBIT"}:
+        raise ValueError("EXCHANGE_VENUE must be DERIBIT or BYBIT.")
     
     # Deribit credentials
-    deribit_key = (
-        os.getenv("DERIBIT_TESTNET_CLIENT_ID")
-        or os.getenv("DERIBIT_TESTNET_API_KEY")
-        or os.getenv("DERIBIT_CLIENT_ID")
-        or ""
-    ).strip()
-    deribit_secret = (
-        os.getenv("DERIBIT_TESTNET_CLIENT_SECRET")
-        or os.getenv("DERIBIT_TESTNET_API_SECRET")
-        or os.getenv("DERIBIT_CLIENT_SECRET")
-        or ""
-    ).strip()
+    deribit_key = os.getenv("DERIBIT_TESTNET_CLIENT_ID", "").strip()
+    deribit_secret = os.getenv("DERIBIT_TESTNET_CLIENT_SECRET", "").strip()
 
     # Bybit credentials
     bybit_key = os.getenv("BYBIT_TESTNET_API_KEY", "").strip()
     bybit_secret = os.getenv("BYBIT_TESTNET_API_SECRET", "").strip()
-
-    # Determine venue
-    if not venue:
-        if deribit_key or deribit_secret or not bybit_key:
-            venue = "DERIBIT"
-        else:
-            venue = "BYBIT"
 
     if venue == "DERIBIT":
         api_key = deribit_key

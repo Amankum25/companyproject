@@ -55,7 +55,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def confirm_execution(venue: str) -> bool:
+def confirm_execution(venue: str, order_quantity: str) -> bool:
     """
     Ask the operator to type a confirmation string before executing orders.
     """
@@ -65,8 +65,10 @@ def confirm_execution(venue: str) -> bool:
     print("=" * 60)
     print()
     print(f"  This will connect to {venue} TESTNET and submit:")
-    print("  - 1 SELL order for a BTC ATM CALL option")
-    print("  - 1 SELL order for a BTC ATM PUT option")
+    print(f"  - 1 BTC ATM CALL SELL LIMIT order, quantity {order_quantity}")
+    print(f"  - 1 BTC ATM PUT SELL LIMIT order, quantity {order_quantity}")
+    print("  The prices are selected from the first valid option-chain snapshot.")
+    print("  Orders use GTC and may remain open until filled or cancelled.")
     print()
     print("  These are TESTNET orders (no real money).")
     print()
@@ -133,7 +135,7 @@ def run_execute_mode(config) -> None:
     """
     Run in EXECUTE mode: connect, discover, then ask for confirmation before ordering.
     """
-    confirmed = confirm_execution(config.venue)
+    confirmed = confirm_execution(config.venue, config.order_quantity)
     if not confirmed:
         sys.exit(0)
 

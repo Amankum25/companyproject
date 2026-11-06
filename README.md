@@ -1,6 +1,6 @@
-# BTC Options Short Straddle — NautilusTrader + Bybit Testnet
+# BTC Options Short Straddle — Deribit Testnet (default)
 
-A complete BTC ATM Short Straddle trading system built with NautilusTrader 2.0 and the Bybit Testnet. This project demonstrates event-driven trading architecture, options instrument selection, risk management, and professional-grade order lifecycle handling.
+A BTC ATM Short Straddle system built with NautilusTrader 2.0. Deribit Testnet is the default venue; Bybit Testnet remains an optional venue. The project includes a read-only Deribit market dashboard and a separate testnet strategy runner.
 
 ---
 
@@ -71,10 +71,10 @@ You now have two premiums in hand. If BTC stays flat, both options expire worthl
 
 | Component | Technology |
 |-----------|-----------|
-| Language | Python 3.12 |
+| Language | Python 3.13+ |
 | Trading Engine | NautilusTrader 2.0.0rc8 |
-| Exchange | Bybit (via official adapter) |
-| Environment | Bybit Testnet |
+| Exchange | Deribit (default) or Bybit (via official adapter) |
+| Environment | Testnet only |
 | Config | python-dotenv |
 | Testing | pytest |
 | Runtime | WSL2 Ubuntu 24.04 |
@@ -87,8 +87,8 @@ You now have two premiums in hand. If BTC stays flat, both options expire worthl
 
 You need:
 - Windows 10/11 with WSL2 enabled (Ubuntu 24.04)
-- Bybit Testnet account with API key and secret
-- Python 3.12
+- Deribit Testnet account for the default venue, or Bybit Testnet if explicitly selected
+- Python 3.13 or newer
 
 ### 1. Install NautilusTrader in WSL2
 
@@ -109,7 +109,7 @@ python -c "import nautilus_trader; print(nautilus_trader.__version__)"
 
 ### 3. Configure API credentials
 
-Copy `.env.example` to `.env` and fill in your Bybit Testnet credentials:
+The project `.env` is ready for Deribit Testnet credentials. Set `DERIBIT_TESTNET_CLIENT_ID` and `DERIBIT_TESTNET_CLIENT_SECRET` there. Keep `EXCHANGE_VENUE=DERIBIT` (or omit it; Deribit is the default). The dashboard's market data is public; credentials are only needed for account data and authenticated testnet execution.
 
 ```bash
 cp .env.example .env
@@ -131,6 +131,13 @@ BYBIT_TESTNET_API_SECRET=your_secret_here
 
 Get your keys from: https://testnet.bybit.com → Account → API Management
 
+**Requirements for Deribit Testnet API credentials:**
+- Create the client ID and client secret in your account at [Deribit Testnet](https://test.deribit.com).
+- Grant only the permissions needed for your use, such as account read access for the dashboard.
+- Keep the secret in the ignored local `.env`; never paste it into chat or commit it.
+
+Bybit Testnet is still available as an optional venue by setting `EXCHANGE_VENUE=BYBIT` and configuring its separate variables.
+
 **Requirements for Bybit Testnet API key:**
 - Enable **Unified Trading Account (UTA)**
 - Enable **Options trading** permission
@@ -140,9 +147,9 @@ Get your keys from: https://testnet.bybit.com → Account → API Management
 
 ## Running the Application
 
-### Live read-only dashboard (Deribit Testnet)
+### Live dashboard and confirmed orders (Deribit Testnet)
 
-The browser dashboard is served by a local Python backend. It polls Deribit Testnet for the BTC index and nearest matching BTC call/put quotes every three seconds. If valid Deribit Testnet API credentials are present in `.env`, it also displays the account summary. The API secret stays on the local server; it is never sent to the browser. This page is read only and has no order submission controls.
+The browser dashboard is served by a local Python backend. It polls Deribit Testnet for the BTC index and nearest matching BTC call/put quotes every three seconds. With valid Testnet credentials, it displays the account summary and lets you choose the call, put, or both for a limit-sell order. The browser first shows the exact contracts, amount, and limit prices; submission requires typing the confirmation phrase. The API secret stays on the server and is never sent to the browser.
 
 Activate the project environment, install the dashboard dependencies if needed, and start it from the project root:
 
@@ -152,7 +159,7 @@ python -m pip install fastapi 'uvicorn[standard]' httpx
 python -m uvicorn web.server:app --host 127.0.0.1 --port 8000
 ```
 
-Then open **http://127.0.0.1:8000** in your browser. Keep `EXCHANGE_VENUE=DERIBIT` and use Deribit Testnet credentials in `.env`. Market data is public; account balances require a valid Testnet API key with account read permission. If the key is missing or cannot authenticate, market prices still load and the account panel explains the issue.
+Then open **http://127.0.0.1:8000** in your browser. Keep `EXCHANGE_VENUE=DERIBIT` and use Deribit Testnet credentials in `.env`. Market data is public. Account details need account-read permission; placing orders also needs trade permission on the Testnet API key. If private authentication fails, order controls stay disabled while the dashboard reports the error.
 
 On Windows PowerShell, run these commands from the project folder instead:
 
@@ -161,7 +168,7 @@ python -m pip install fastapi "uvicorn[standard]" httpx python-dotenv
 python -m uvicorn web.server:app --host 127.0.0.1 --port 8000
 ```
 
-This dashboard connects to Deribit Testnet only. It does not make the Bybit assignment complete, and it does not submit trades.
+This dashboard connects to Deribit Testnet only. Order buttons submit GTC limit orders to Testnet after review and explicit typed confirmation; manage and cancel open orders in your Deribit Testnet account.
 
 **All commands must be run in WSL2** with the virtual environment activated:
 
@@ -177,7 +184,7 @@ python main.py --mode data
 ```
 
 This:
-- Connects to Bybit Testnet
+- Connects to the configured testnet venue (Deribit by default)
 - Loads all BTC option instruments
 - Finds the nearest ATM strike
 - Displays Call and Put contracts with their quotes
@@ -301,18 +308,18 @@ pytest tests/test_execution_manager.py -v
 |-------|-------|-----|
 | `ModuleNotFoundError: nautilus_trader` | Not in virtual env | Run `source ~/.venvs/btc-straddle/bin/activate` |
 | `No BTC options found` | Testnet instruments not loaded | Wait 30s after start; Testnet may have limited options |
-| `OrderRejected: Insufficient margin` | Testnet account has no funds | Add testnet funds from Bybit Testnet faucet |
+| `OrderRejected: Insufficient margin` | Testnet account has no funds | Add testnet funds using the selected exchange's testnet funding process |
 | `401 Unauthorized` | Wrong API key | Check `.env` file, ensure Testnet keys are used |
 | `retCode: 10001` | Invalid parameter | Check instrument ID format and quantity precision |
-| `Connection refused` | Bybit Testnet down | Check https://testnet.bybit.com status |
+| `Connection refused` | Testnet service unavailable | Check the selected exchange's testnet status |
 
 ---
 
 ## Limitations
 
-1. **Testnet liquidity**: Bybit Testnet options often have no live quotes. The bot uses mark prices as a fallback for ATM selection but requires actual quotes for order submission.
+1. **Testnet liquidity**: Testnet options may have limited live quotes. The bot uses mark prices as a fallback for ATM selection but requires actual quotes for order submission.
 2. **Options availability**: Testnet may have fewer expiries and strikes than Mainnet.
 3. **No Greeks**: This implementation does not use delta, gamma, or vega for position sizing.
-4. **Fixed quantity**: Default order quantity is 0.01 BTC — the minimum for most contracts.
+4. **Fixed quantity**: Default order quantity is 0.1 BTC on Deribit and 0.01 on Bybit.
 5. **No portfolio hedging**: This is a demonstration system, not a production trading system.
 

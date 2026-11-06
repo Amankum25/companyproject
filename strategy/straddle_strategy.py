@@ -152,6 +152,8 @@ class StraddleStrategy(Strategy):
 
         # Flag to prevent submitting orders more than once
         self._entry_submitted = False
+        # Set by main.py only after the operator confirms testnet execution.
+        self._user_confirmed = False
 
     # =========================================================================
     # LIFECYCLE METHODS
@@ -464,6 +466,8 @@ class StraddleStrategy(Strategy):
 
         # Print the pre-trade summary and obtain confirmation
         self._print_entry_confirmation_prompt()
+        if self._user_confirmed:
+            self.submit_entry()
 
     def _print_entry_confirmation_prompt(self) -> None:
         """

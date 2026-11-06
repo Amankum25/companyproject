@@ -16,13 +16,14 @@
     <div class="side-label">WORKSPACE</div>
     <a class="nav-item active" href="#overview"><span class="nav-icon">◫</span>Overview</a>
     <a class="nav-item" href="#options"><span class="nav-icon">⌁</span>Option chain</a>
+    <a class="nav-item" href="#trade"><span class="nav-icon">↗</span>Orders</a>
     <a class="nav-item" href="#account"><span class="nav-icon">◷</span>Account</a>
-    <div class="sidebar-bottom"><div class="side-label">CONNECTION</div><div class="venue-card"><span class="venue-mark">D</span><span><b>Deribit</b><small>Testnet environment</small></span><span class="venue-dot"></span></div><div class="safe-note"><span>◈</span><p>Read only dashboard<br><b>No orders can be placed here</b></p></div></div>
+    <div class="sidebar-bottom"><div class="side-label">CONNECTION</div><div class="venue-card"><span class="venue-mark">D</span><span><b>Deribit</b><small>Testnet environment</small></span><span class="venue-dot"></span></div><div class="safe-note"><span>◈</span><p>TESTNET ONLY<br><b>Order review required</b></p></div></div>
   </aside>
   <main class="main" id="overview">
-    <header class="topbar"><div class="breadcrumb">Markets <span>/</span> Bitcoin options</div><div class="top-right"><span class="read-only"><span class="lock">▣</span> READ ONLY</span><span class="avatar">A</span></div></header>
+    <header class="topbar"><div class="breadcrumb">Markets <span>/</span> Bitcoin options</div><div class="top-right"><span class="read-only"><span class="lock">▣</span> TESTNET ORDERS</span><span class="avatar">A</span></div></header>
     <div class="content">
-      <section class="page-heading"><div><div class="eyebrow"><span class="live-dot"></span> DERIBIT TESTNET <span class="eyebrow-sep">·</span> LIVE MARKET DATA</div><h1>BTC options overview</h1><p>Real time market data from your Testnet connection. No trades are sent.</p></div><div class="refresh-info"><span class="pulse"></span><span id="last-updated">Connecting to exchange…</span></div></section>
+      <section class="page-heading"><div><div class="eyebrow"><span class="live-dot"></span> DERIBIT TESTNET <span class="eyebrow-sep">·</span> LIVE MARKET DATA</div><h1>BTC options overview</h1><p>Review live call and put quotes, then confirm Testnet limit orders below.</p></div><div class="refresh-info"><span class="pulse"></span><span id="last-updated">Connecting to exchange…</span></div></section>
       <div class="alert" id="connection-alert"><span class="alert-icon">↗</span><span id="connection-message">Connecting to Deribit Testnet…</span><button id="retry-button">Retry</button></div>
       <section class="metrics">
         <article class="metric-card price-card"><div class="metric-top"><span>BTC INDEX PRICE</span><span class="metric-icon green">₿</span></div><div class="metric-value" id="btc-price">—</div><div class="metric-foot"><span class="live-tag"><i></i> LIVE</span><span>Deribit BTC index</span></div><div class="sparkline" aria-hidden="true"><svg viewBox="0 0 220 48" preserveAspectRatio="none"><path id="sparkline-fill" fill="url(#fade)" opacity=".18"/><path id="sparkline-line" fill="none" stroke="#20a879" stroke-width="2.5"/><defs><linearGradient id="fade" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#20a879"/><stop offset="1" stop-color="#20a879" stop-opacity="0"/></linearGradient></defs></svg></div></article>
@@ -37,10 +38,31 @@
         </article>
         <article class="panel account-panel" id="account"><div class="panel-head"><div><div class="panel-title">Testnet account</div><div class="panel-sub">Private data · API key stays server side</div></div><span class="account-icon">▣</span></div><div id="account-content" class="account-content"><div class="account-loading"><span class="loader"></span><span>Loading account summary…</span></div></div><div class="account-foot">Testnet funds have no real-world value.</div></article>
       </section>
-      <section class="bottom-grid"><article class="panel strategy-panel"><div class="panel-head"><div><div class="panel-title">Strategy at a glance</div><div class="panel-sub">BTC short straddle · informational only</div></div><span class="strategy-status">NOT RUNNING</span></div><div class="strategy-steps"><div class="step"><span class="step-num">01</span><div><b>Find ATM pair</b><small>Same strike and expiry</small></div></div><div class="step"><span class="step-num">02</span><div><b>Sell call + put</b><small>Execution is not connected</small></div></div><div class="step"><span class="step-num">03</span><div><b>Watch combined risk</b><small>Configured thresholds: +1% / −2%</small></div></div></div></article><article class="panel info-panel"><span class="info-illustration">✳</span><div><div class="panel-title">A note on live data</div><p>Market prices refresh from Deribit Testnet. Account details require a valid read-enabled Testnet API key. This dashboard is read only and never places an order.</p><a href="https://docs.deribit.com/" target="_blank" rel="noreferrer">Deribit API documentation <span>↗</span></a></div></article></section>
+      <section class="panel execution-panel" id="trade">
+        <div class="panel-head"><div><div class="panel-title">Place options orders</div><div class="panel-sub">Deribit Testnet · limit sells · review before submission</div></div><span class="strategy-status">TESTNET</span></div>
+        <div class="trade-controls">
+          <label class="leg-choice"><input id="trade-call" type="checkbox"><span class="contract-type call">C</span><span><b>Sell call</b><small id="trade-call-label">—</small></span></label>
+          <label class="leg-choice"><input id="trade-put" type="checkbox"><span class="contract-type put">P</span><span><b>Sell put</b><small id="trade-put-label">—</small></span></label>
+          <label class="amount-choice">Amount per leg (BTC)<input id="trade-amount" type="number" min="0.1" step="0.1" value="0.1"></label>
+          <button id="preview-orders" class="trade-button" disabled>Review selected orders</button>
+        </div>
+        <div id="trade-status" class="trade-status" role="status">Waiting for live quotes and valid Testnet credentials.</div>
+        <p class="trade-note">A limit order may remain open until filled or cancelled. Selecting both legs sends two separate orders. If only one is accepted, check the account immediately.</p>
+      </section>
+      <section class="bottom-grid"><article class="panel strategy-panel"><div class="panel-head"><div><div class="panel-title">Strategy at a glance</div><div class="panel-sub">BTC short straddle · orders require confirmation</div></div><span class="strategy-status">READY</span></div><div class="strategy-steps"><div class="step"><span class="step-num">01</span><div><b>Review pair</b><small>Same strike and expiry</small></div></div><div class="step"><span class="step-num">02</span><div><b>Submit selected legs</b><small>Confirmed limit orders</small></div></div><div class="step"><span class="step-num">03</span><div><b>Manage open orders</b><small>Check Deribit Testnet account</small></div></div></div></article><article class="panel info-panel"><span class="info-illustration">✳</span><div><div class="panel-title">Testnet order controls</div><p>Orders are sent to Deribit Testnet using your server-side API credentials. Verify the contract, amount, and price in the confirmation before submitting.</p><a href="https://docs.deribit.com/api-reference/trading/private-sell" target="_blank" rel="noreferrer">Deribit order API documentation <span>↗</span></a></div></article></section>
       <footer>Northstar <span>·</span> BTC options workspace <span>·</span> Testnet data, not financial advice</footer>
     </div>
   </main>
+  <dialog id="trade-dialog" class="trade-dialog">
+    <form method="dialog" class="dialog-close"><button aria-label="Close">×</button></form>
+    <div class="eyebrow"><span class="live-dot"></span> DERIBIT TESTNET ORDER REVIEW</div>
+    <h2>Confirm limit orders</h2>
+    <div id="trade-preview-details" class="preview-details"></div>
+    <p class="modal-copy">These are SELL limit orders. Unfilled orders remain open until cancelled. Confirm the selected contracts and prices in your Deribit Testnet account.</p>
+    <label class="confirm-choice">Type <b id="confirmation-phrase">SELL CALL AND PUT</b> to submit<input id="trade-confirmation" autocomplete="off" spellcheck="false"></label>
+    <div class="dialog-actions"><button id="cancel-preview" class="secondary-button" type="button">Cancel</button><button id="submit-orders" class="trade-button" type="button" disabled>Submit testnet orders</button></div>
+    <div id="submit-status" class="trade-status" role="status"></div>
+  </dialog>
   <script src="/assets/app.js"></script>
 </body>
 </html>
